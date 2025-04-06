@@ -1,0 +1,7 @@
+name = "tempverse"  # Keep your chosen project name
+location = "CAE1"      # Use a Canada-specific region (CAE1 is Montreal)
+compatibility_date = "2025-04-06" # Use the date from your error log or a more recent one
+
+[site]
+bucket = "."        # The current directory contains our static assets (the HTML file)
+# entry-point = "."   # Remove the entry-point line
