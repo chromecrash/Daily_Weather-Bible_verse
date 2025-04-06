@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Weather & Bible Verse</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        /* Base Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0 auto; /* Center the body horizontally */
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            text-align: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+            font-size: 1.1rem;
+            max-width: 1200px; /* Optional: Limit the maximum width of the entire body */
+        }
+
+        .container {
+            width: 95%; /* Take up a larger percentage of the body width */
+            max-width: 1080px; /* Maintain the previous maximum width for content */
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            gap: 25px;
+            margin-top: 25px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 18px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
+            color: #333;
+            width: calc(50% - 25px);
+            box-sizing: border-box;
+            min-width: 350px;
+            text-align: left;
+        }
+
+        .card h2 {
+            margin-bottom: 20px;
+            font-size: 1.6rem;
+            color: #2c3e50;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .weather p, .verse p {
+            font-size: 1.2rem;
+            margin: 8px 0;
+            color: #555;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .icon {
+            font-size: 2.5rem;
+            color: #3498db;
+        }
+
+        .card h2 .icon {
+            font-size: 2rem;
+        }
+
+        .weather-advice {
+            font-style: italic;
+            color: #777;
+            margin-top: 15px;
+            font-size: 1rem;
+        }
+
+        /* Hourly Forecast Styling */
+        .hourly-forecast {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .hourly-forecast .hour {
+            background: #f9f9f9;
+            padding: 12px;
+            border-radius: 8px;
+            width: calc(16.66% - 10px);
+            min-width: 60px;
+            text-align: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        .hourly-forecast .hour i {
+            font-size: 1.5rem;
+            color: #3498db;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .hourly-forecast .hour p {
+            margin-top: 5px;
+            font-size: 1rem;
+            color: #777;
+            white-space: normal;
+            overflow: visible;
+            text-overflow: clip;
+        }
+
+        /* Clock Styling */
+        .clock {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #444;
+            width: 100%;
+            text-align: center;
+        }
+
+        /* Landscape Mode Adjustments */
+        @media (orientation: landscape) {
+            .container {
+                flex-direction: row;
+                justify-content: space-around;
+            }
+
+            .card {
+                width: calc(45% - 25px); /* Slightly wider cards in landscape */
+            }
+
+            .hourly-forecast .hour {
+                width: calc(16.66% - 10px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="clock" id="clock"><i class="far fa-clock" style="margin-right: 8px;"></i></div>
+    <div class="container">
+        <div class="card weather">
+            <h2><i class="fas fa-sun icon"></i> Weather in Kanata, ON</h2>
+            <p id="temperature"><i class="fas fa-thermometer-half"></i> Loading...</p>
+            <p id="feels-like"><i class="fas fa-temperature-low"></i> Loading...</p>
+            <p id="conditions"><i class="fas fa-cloud"></i> </p>
+            <p id="wind"><i class="fas fa-wind"></i> </p>
+            <p class="weather-advice" id="weather-advice"></p>
+            <div class="hourly-forecast" id="hourly-forecast">
+                </div>
+        </div>
+
+        <div class="card verse">
+            <h2><i class="fas fa-bible icon"></i> Bible Verse</h2>
+            <p id="verse">Loading...</p>
+            <p id="reference" style="font-style: italic; color: #777; font-size: 1.1rem;"><i class="fas fa-book-open" style="margin-right: 5px;"></i></p>
+        </div>
+    </div>
+
+    <script>
+        // Function to determine weather icon based on weather code
+        function getWeatherIcon(weatherCode) {
+            if (weatherCode === 0) return "fa-sun";
+            if (weatherCode === 1 || weatherCode === 2) return "fa-cloud-sun";
+            if (weatherCode === 3) return "fa-cloud";
+            if (weatherCode >= 51 && weatherCode <= 65) return "fa-cloud-rain";
+            if (weatherCode >= 71 && weatherCode <= 77) return "fa-snowflake";
+            if (weatherCode >= 95 && weatherCode <= 99) return "fa-bolt";
+            return "fa-cloud"; // Default
+        }
+
+        // Function to generate weather advice
+        function getWeatherAdvice(temperature, weatherCode) {
+            if (temperature < 10) {
+                return "Looks chilly! Dress warmly.";
+            } else if (weatherCode >= 51 && weatherCode <= 67) { // Rain or Freezing Rain
+                return "Don't forget your umbrella!";
+            } else if (weatherCode >= 71 && weatherCode <= 77) { // Snow
+                return "It's snowing! Bundle up.";
+            } else if (temperature > 25 && (weatherCode === 0 || weatherCode === 1)) {
+                return "It's a warm, sunny day!";
+            }
+            return ""; // Default advice
+        }
+
+        // Fetch weather from Open-Meteo (no API key needed)
+        fetch("https://api.open-meteo.com/v1/forecast?latitude=45.3041&longitude=-75.9058&current_weather=true&hourly=temperature_2m,apparent_temperature,weathercode,windspeed_10m")
+            .then(response => response.json())
+            .then(data => {
+                const weather = data.current_weather;
+                const temperature = weather.temperature;
+                const feelsLike = weather.apparent_temperature;
+                const weatherCode = weather.weathercode;
+
+                document.getElementById("temperature").innerHTML = `<i class="fas fa-thermometer-half"></i> Temperature: ${temperature}°C`;
+                document.getElementById("feels-like").innerHTML = `<i class="fas fa-temperature-low"></i> Feels like: ${feelsLike}°C`;
+                document.getElementById("conditions").innerHTML = `<i class="fas fa-cloud"></i> Conditions: ${getWeatherConditionText(weatherCode)}`;
+                document.getElementById("wind").innerHTML = `<i class="fas fa-wind"></i> Wind: ${weather.windspeed} km/h`;
+
+                const advice = getWeatherAdvice(temperature, weatherCode);
+                document.getElementById("weather-advice").textContent = advice;
+
+                // Hourly forecast
+                const hourlyForecast = data.hourly;
+                const hourlyContainer = document.getElementById("hourly-forecast");
+                hourlyContainer.innerHTML = ''; // Clear previous forecast
+
+                // Loop through the next few hours (up to 6 hours)
+                const now = new Date();
+                const currentHour = now.getHours();
+                for (let i = 0; i < 6; i++) {
+                    const hourIndex = (currentHour + i + 1) % 24; // Get the index for the next hours
+                    if (hourlyForecast.time[hourIndex]) {
+                        const hourTemp = hourlyForecast.temperature_2m[hourIndex];
+                        const hourCondition = hourlyForecast.weathercode[hourIndex];
+                        const forecastTime = new Date(hourlyForecast.time[hourIndex]);
+                        const displayHour = forecastTime.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true });
+
+                        const hourDiv = document.createElement("div");
+                        hourDiv.classList.add("hour");
+
+                        const icon = document.createElement("i");
+                        icon.classList.add("fas", getWeatherIcon(hourCondition)); // Use the function to get the correct icon
+                        hourDiv.appendChild(icon);
+
+                        const timeP = document.createElement("p");
+                        timeP.textContent = displayHour;
+                        hourDiv.appendChild(timeP);
+
+                        const tempP = document.createElement("p");
+                        tempP.textContent = `${hourTemp}°C`;
+                        hourDiv.appendChild(tempP);
+
+                        hourlyContainer.appendChild(hourDiv);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching weather data:", error);
+                document.getElementById("temperature").textContent = "Error loading weather data";
+                document.getElementById("feels-like").textContent = "";
+                document.getElementById("weather-advice").textContent = "Error loading weather information.";
+            });
+
+        function getWeatherConditionText(weatherCode) {
+            if (weatherCode === 0) return 'Clear';
+            if (weatherCode === 1 || weatherCode === 2) return 'Mainly Clear';
+            if (weatherCode === 3) return 'Overcast';
+            if (weatherCode >= 51 && weatherCode <= 55) return 'Drizzle';
+            if (weatherCode >= 56 && weatherCode <= 57) return 'Freezing Drizzle';
+            if (weatherCode >= 61 && weatherCode <= 65) return 'Rain';
+            if (weatherCode >= 66 && weatherCode <= 67) return 'Freezing Rain';
+            if (weatherCode >= 71 && weatherCode <= 77) return 'Snow Fall';
+            if (weatherCode >= 80 && weatherCode <= 82) return 'Rain Showers';
+            if (weatherCode >= 85 && weatherCode <= 86) return 'Snow Showers';
+            if (weatherCode >= 95 && weatherCode <= 99) return 'Thunderstorm';
+            return 'Cloudy'; // Default
+        }
+
+        // Fetch daily Bible verse from OurManna
+        fetch("https://beta.ourmanna.com/api/v1/get/?format=json")
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("verse").textContent = `"${data.verse.details.text}"`; // Added quotes
+                document.getElementById("reference").innerHTML = `<i class="fas fa-book-open" style="margin-right: 5px;"></i> ${data.verse.details.reference}`;
+            })
+            .catch(error => {
+                console.error("Error fetching Bible verse:", error);
+                document.getElementById("verse").textContent = "Error loading Bible verse";
+            });
+
+        // Live clock with date and day
+        function updateClock() {
+            const now = new Date();
+            const day = now.toLocaleDateString('en-US', { weekday: 'long' });
+            const date = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+            const time = now.toLocaleTimeString('en-US');
+            document.getElementById("clock").innerHTML = `<i class="far fa-clock" style="margin-right: 8px;"></i> ${day}, ${date} | ${time}`;
+        }
+
+        setInterval(updateClock, 1000); // Update every second
+        updateClock(); // Initial call to show the clock immediately
+    </script>
+</body>
+</html>
