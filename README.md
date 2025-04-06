@@ -62,4 +62,4 @@ The webpage will automatically fetch the weather data and Bible verse from the r
 
 ## License
 
-This project is open-source and available under the [MIT License](LICENSE) (you can add a LICENSE file with the MIT license text if you plan to make it publicly available on platforms like GitHub).
+This project is open-source and available under the [MIT License](LICENSE)
